@@ -12,7 +12,7 @@ declare(strict_types=1);
 session_start();
 
 if (!isset($_SESSION['usuario_activo'])) {
-    header('Location: ../frontend/index.php');
+    header('Location: ../index.php');
     exit;
 }
 

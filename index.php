@@ -12,7 +12,7 @@ session_start();
 
 // Si ya hay sesión activa, redirigir al dashboard
 if (isset($_SESSION['usuario_activo'])) {
-    header('Location: dashboard.php');
+    header('Location: frontend/dashboard.php');
     exit;
 }
 
@@ -36,7 +36,7 @@ if (isset($_SESSION['flash'])) {
     <!-- Bootstrap Icons (CDN) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <!-- Estilos propios -->
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="frontend/css/styles.css">
 </head>
 <body>
 
@@ -61,7 +61,7 @@ if (isset($_SESSION['flash'])) {
             <?php endif; ?>
 
             <form class="ga-form" id="formLogin"
-                  action="../backend/includes/procesar_login.php"
+                  action="backend/includes/procesar_login.php"
                   method="POST"
                   novalidate>
 
@@ -102,7 +102,7 @@ if (isset($_SESSION['flash'])) {
 
 <!-- Bootstrap JS Bundle (CDN) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/app.js"></script>
+<script src="frontend/js/app.js"></script>
 <script>
     // Mostrar / ocultar contraseña
     document.getElementById('togglePassword').addEventListener('click', function () {

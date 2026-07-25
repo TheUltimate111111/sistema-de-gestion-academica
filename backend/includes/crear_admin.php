@@ -34,7 +34,7 @@ try {
     echo '<p><strong>Usuario:</strong> admin</p>';
     echo '<p><strong>Contraseña:</strong> admin123</p>';
     echo '<p style="color:#dc3545;">⚠️ Elimina este archivo del servidor después de usarlo.</p>';
-    echo '<a href="../../frontend/index.php" style="color:#2f5d9f;">→ Ir al Login</a>';
+    echo '<a href="../../index.php" style="color:#2f5d9f;">→ Ir al Login</a>';
     echo '</div>';
 } catch (PDOException $e) {
     echo '<div style="font-family:sans-serif;padding:2rem;color:#dc3545;">';

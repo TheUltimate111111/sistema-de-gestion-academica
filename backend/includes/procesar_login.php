@@ -21,7 +21,7 @@ if (isset($_SESSION['usuario_activo'])) {
 require_once __DIR__ . '/conexion.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../../frontend/index.php');
+    header('Location: ../../index.php');
     exit;
 }
 
@@ -30,7 +30,7 @@ $passwordInput = (string)($_POST['password'] ?? '');
 
 if ($usuarioInput === '' || $passwordInput === '') {
     $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Usuario y contraseña son obligatorios.'];
-    header('Location: ../../frontend/index.php');
+    header('Location: ../../index.php');
     exit;
 }
 
@@ -66,12 +66,12 @@ try {
     }
 
     $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Usuario o contraseña incorrectos.'];
-    header('Location: ../../frontend/index.php');
+    header('Location: ../../index.php');
     exit;
 
 } catch (PDOException $e) {
     $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error de base de datos. Intenta de nuevo.'];
-    header('Location: ../../frontend/index.php');
+    header('Location: ../../index.php');
     exit;
 }
 ?>

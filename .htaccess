@@ -1,0 +1,10 @@
+RewriteEngine On
+
+# Bloquear acceso GET directo a archivos PHP en backend/ desde el navegador
+RewriteCond %{REQUEST_METHOD} =GET
+RewriteRule ^backend/ - [F,L]
+
+# Redirigir todo lo que no sea un archivo existente a index.php (login)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
