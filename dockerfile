@@ -1,12 +1,14 @@
 FROM php:8.2-apache
 
-# Instalar extensiones necesarias
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Copiar archivos del proyecto
-COPY . /var/www/html/
+# Cambiar DocumentRoot a frontend
+ENV APACHE_DOCUMENT_ROOT /var/www/html/frontend
 
-# Dar permisos
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
+
+COPY . /var/www/html/
 
 RUN chown -R www-data:www-data /var/www/html
 
