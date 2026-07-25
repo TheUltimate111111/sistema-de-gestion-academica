@@ -1,12 +1,4 @@
 <?php
-/**
- * sidebar.php
- * ---------------------------------------------------
- * Menú lateral reutilizable. Detecta la página actual
- * para resaltar el enlace activo.
- * Muestra el nombre del usuario autenticado desde la sesión.
- * ---------------------------------------------------
- */
 $paginaActual = basename($_SERVER['PHP_SELF']);
 
 function claseActiva(string $pagina, string $paginaActual): string {
@@ -16,10 +8,13 @@ function claseActiva(string $pagina, string $paginaActual): string {
 $usuarioNombre = $_SESSION['usuario_activo']['nombre'] ?? 'Usuario';
 $usuarioRol    = $_SESSION['usuario_activo']['rol']    ?? '';
 ?>
+<!-- Sidebar -->
 <aside class="ga-sidebar" id="gaSidebar">
-    <div class="sidebar-brand">
-        <i class="bi bi-mortarboard-fill"></i>
-        <span>Gestión Académica</span>
+    <div class="sidebar-header">
+        <div class="sidebar-brand">
+            <i class="bi bi-mortarboard-fill"></i>
+            <span>Gestión Académica</span>
+        </div>
     </div>
 
     <ul class="nav flex-column mt-2">
@@ -66,5 +61,5 @@ $usuarioRol    = $_SESSION['usuario_activo']['rol']    ?? '';
     </div>
 </aside>
 
-<!-- Fondo oscuro para móvil cuando el sidebar está abierto -->
-<div class="ga-sidebar-backdrop" id="gaSidebarBackdrop"></div>
+<!-- Backdrop para móvil -->
+<div class="ga-backdrop" id="gaBackdrop"></div>

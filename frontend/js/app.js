@@ -17,52 +17,89 @@ document.addEventListener('DOMContentLoaded', function () {
 /* -----------------------------------------------------
    1) SIDEBAR: mostrar/ocultar en PC y móviles
    ----------------------------------------------------- */
-function initSidebarToggle() {
-    const toggleBtn = document.querySelector('.ga-sidebar-toggle');
+
+function closeSidebar() {
     const sidebar = document.querySelector('.ga-sidebar');
-    const backdrop = document.querySelector('.ga-sidebar-backdrop');
+    const backdrop = document.getElementById('gaBackdrop');
+    if (sidebar) sidebar.classList.remove('show');
+    if (backdrop) backdrop.classList.remove('show');
+    updateToggleIcons();
+}
 
-    if (!toggleBtn || !sidebar) return;
+function updateToggleIcons() {
+    const sidebar = document.querySelector('.ga-sidebar');
+    const toggleBtns = document.querySelectorAll('.ga-sidebar-toggle');
+    if (!sidebar) return;
 
-    toggleBtn.addEventListener('click', function () {
+    const isClosed = sidebar.classList.contains('collapsed') || !sidebar.classList.contains('show');
+    const iconClass = isClosed ? 'bi-list' : 'bi-x-lg';
+
+    toggleBtns.forEach(function (btn) {
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.classList.remove('bi-list', 'bi-x-lg');
+            icon.classList.add(iconClass);
+        }
+    });
+}
+
+function initSidebarToggle() {
+    const toggleBtns = document.querySelectorAll('.ga-sidebar-toggle');
+    const sidebar = document.querySelector('.ga-sidebar');
+    const backdrop = document.getElementById('gaBackdrop');
+
+    if (!sidebar) return;
+
+    function toggleSidebar() {
         if (window.innerWidth <= 991.98) {
-            // Comportamiento Móvil: sidebar se sobrepone (clase show)
             sidebar.classList.toggle('show');
             if (backdrop) backdrop.classList.toggle('show');
         } else {
-            // Comportamiento PC: sidebar colapsa achicando margen
             sidebar.classList.toggle('collapsed');
         }
+        updateToggleIcons();
+    }
+
+    toggleBtns.forEach(function (btn) {
+        btn.addEventListener('click', toggleSidebar);
     });
 
     if (backdrop) {
         backdrop.addEventListener('click', function () {
-            sidebar.classList.remove('show');
-            backdrop.classList.remove('show');
+            closeSidebar();
         });
     }
+
+    // Cerrar sidebar al tocar cualquier enlace de navegación
+    sidebar.querySelectorAll('.nav-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            closeSidebar();
+        });
+    });
 }
 
 /* -----------------------------------------------------
    1.5) ANIMACIONES DE TRANSICIÓN DE PÁGINA
    ----------------------------------------------------- */
 function initPageTransitions() {
-    // Interceptar clics en enlaces del sidebar
     const navLinks = document.querySelectorAll('.ga-sidebar .nav-link');
     const contentArea = document.querySelector('.ga-content') || document.querySelector('.ga-wrapper');
 
-    navLinks.forEach(link => {
+    navLinks.forEach(function (link) {
         link.addEventListener('click', function (e) {
-            // Si el enlace tiene un href válido (y no es # o externo)
             const href = this.getAttribute('href');
             if (href && !href.startsWith('#') && !href.startsWith('http') && contentArea) {
                 e.preventDefault();
+
+                // Cerrar sidebar en móvil antes de navegar
+                closeSidebar();
+
                 // Activar animación de salida
                 contentArea.classList.add('ga-content-fadeout');
-                // Navegar tras la animación (250ms acorde al CSS)
-                setTimeout(() => {
+
+                setTimeout(function () {
                     window.location.href = href;
-                }, 200);
+                }, 150);
             }
         });
     });

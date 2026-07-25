@@ -58,7 +58,7 @@ $usuario = $_SESSION['usuario_activo'];
 
     <?php require 'sidebar.php'; ?>
 
-    <div class="ga-content">
+    <div class="ga-content ga-animate-in">
 
         <header class="ga-topbar">
             <div class="d-flex align-items-center gap-2">
