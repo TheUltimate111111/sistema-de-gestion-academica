@@ -1,42 +1,38 @@
 <?php
-/**
- * conexion.php
- * ---------------------------------------------------
- * Archivo de conexión a la base de datos usando PDO.
- * Soporta PostgreSQL (Render) y MySQL/MariaDB (local).
- * ---------------------------------------------------
- */
 
 $dbUrl = getenv('DATABASE_URL');
 
-if ($dbUrl && strpos($dbUrl, '://') !== false) {
-    // PostgreSQL en Render (DATABASE_URL)
+if ($dbUrl) {
     $parsed = parse_url($dbUrl);
-    $host   = $parsed['host']   ?? '127.0.0.1';
-    $port   = $parsed['port']   ?? '5432';
-    $dbname = ltrim($parsed['path'] ?? '/', '/');
-    $user   = $parsed['user']   ?? '';
-    $pass   = $parsed['pass']   ?? '';
-    $dsn    = "pgsql:host={$host};port={$port};dbname={$dbname}";
+
+    if (!$parsed) {
+        die("Error: DATABASE_URL inválida");
+    }
+
+    $host = $parsed['host'] ?? null;
+    $port = $parsed['port'] ?? '5432';
+    $dbname = isset($parsed['path']) ? ltrim($parsed['path'], '/') : null;
+    $user = $parsed['user'] ?? null;
+    $pass = $parsed['pass'] ?? null;
+
+    if (!$host || !$user || !$dbname) {
+        die("Error: Datos incompletos en DATABASE_URL");
+    }
+
+    $dsn = "pgsql:host={$host};port={$port};dbname={$dbname}";
 } else {
-    // MySQL/MariaDB local (XAMPP)
-    $host   = 'localhost';
+    // LOCAL
+    $host = 'localhost';
     $dbname = 'gestion_academica';
-    $user   = 'root';
-    $pass   = '';
-    $dsn    = "mysql:host={$host};dbname={$dbname};charset=utf8mb4";
+    $user = 'root';
+    $pass = '';
+    $dsn = "mysql:host={$host};dbname={$dbname};charset=utf8mb4";
 }
 
 try {
-    $opciones = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ];
-
-    $pdo = new PDO($dsn, $user, $pass, $opciones);
+    $pdo = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
 } catch (PDOException $e) {
-    http_response_code(500);
-    header('Content-Type: text/html; charset=utf-8');
-    die('Error de conexión a la base de datos. Contacta al administrador.');
+    die("Error real: " . $e->getMessage());
 }
