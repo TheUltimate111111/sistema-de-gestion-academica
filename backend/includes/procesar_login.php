@@ -63,12 +63,7 @@ try {
         exit;
     }
 
-    $debug = 'Usuario encontrado: ' . ($usuarioDB ? 'SI (id=' . $usuarioDB['id'] . ')' : 'NO');
-    if ($usuarioDB) {
-        $debug .= ' | Hash: ' . substr($usuarioDB['password_hash'], 0, 20) . '...';
-        $debug .= ' | Verify: ' . ($credencialesOk ? 'OK' : 'FALLO');
-    }
-    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Debug: ' . htmlspecialchars($debug)];
+    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Usuario o contraseña incorrectos.'];
     header('Location: ../../index.php');
     exit;
 

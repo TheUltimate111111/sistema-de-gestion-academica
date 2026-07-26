@@ -99,8 +99,13 @@ if ($esPostgreSQL) {
     )");
 
     $hash = password_hash('admin123', PASSWORD_DEFAULT);
-    $stmtAdmin = $pdo->prepare(
-        "INSERT INTO usuarios (usuario, nombre, password_hash, rol) VALUES (?, ?, ?, ?) ON CONFLICT (usuario) DO UPDATE SET password_hash = EXCLUDED.password_hash"
-    );
-    $stmtAdmin->execute(['admin', 'Administrador', $hash, 'admin']);
+    try {
+        $stmtAdmin = $pdo->prepare(
+            "INSERT INTO usuarios (usuario, nombre, password_hash, rol) VALUES (?, ?, ?, ?::rol_usuario)"
+        );
+        $stmtAdmin->execute(['admin', 'Administrador', $hash, 'admin']);
+    } catch (PDOException $e) {
+        $stmtUpdate = $pdo->prepare("UPDATE usuarios SET password_hash = ? WHERE usuario = ?");
+        $stmtUpdate->execute([$hash, 'admin']);
+    }
 }
