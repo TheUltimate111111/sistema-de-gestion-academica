@@ -98,12 +98,9 @@ if ($esPostgreSQL) {
         CONSTRAINT uq_usuarios_usuario UNIQUE (usuario)
     )");
 
-    $check = $pdo->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
-    if ((int)$check === 0) {
-        $hash = password_hash('admin123', PASSWORD_DEFAULT);
-        $stmtAdmin = $pdo->prepare(
-            "INSERT INTO usuarios (usuario, nombre, password_hash, rol) VALUES (?, ?, ?, ?)"
-        );
-        $stmtAdmin->execute(['admin', 'Administrador', $hash, 'admin']);
-    }
+    $hash = password_hash('admin123', PASSWORD_DEFAULT);
+    $stmtAdmin = $pdo->prepare(
+        "INSERT INTO usuarios (usuario, nombre, password_hash, rol) VALUES (?, ?, ?, ?) ON CONFLICT (usuario) DO UPDATE SET password_hash = EXCLUDED.password_hash"
+    );
+    $stmtAdmin->execute(['admin', 'Administrador', $hash, 'admin']);
 }
