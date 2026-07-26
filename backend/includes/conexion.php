@@ -9,22 +9,22 @@
 
 $dbUrl = getenv('DATABASE_URL');
 
-if ($dbUrl) {
+if ($dbUrl && strpos($dbUrl, '://') !== false) {
     // PostgreSQL en Render (DATABASE_URL)
     $parsed = parse_url($dbUrl);
-    $host   = $parsed['host'];
-    $port   = $parsed['port'] ?? '5432';
-    $dbname = ltrim($parsed['path'], '/');
-    $user   = $parsed['user'];
-    $pass   = $parsed['pass'];
+    $host   = $parsed['host']   ?? '127.0.0.1';
+    $port   = $parsed['port']   ?? '5432';
+    $dbname = ltrim($parsed['path'] ?? '/', '/');
+    $user   = $parsed['user']   ?? '';
+    $pass   = $parsed['pass']   ?? '';
     $dsn    = "pgsql:host={$host};port={$port};dbname={$dbname}";
 } else {
     // MySQL/MariaDB local (XAMPP)
-    $host = 'localhost';
+    $host   = 'localhost';
     $dbname = 'gestion_academica';
-    $user = 'root';
-    $pass = '';
-    $dsn = "mysql:host={$host};dbname={$dbname};charset=utf8mb4";
+    $user   = 'root';
+    $pass   = '';
+    $dsn    = "mysql:host={$host};dbname={$dbname};charset=utf8mb4";
 }
 
 try {
