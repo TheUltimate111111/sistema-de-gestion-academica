@@ -25,7 +25,9 @@ try {
     $stmt = $pdo->prepare(
         'INSERT INTO usuarios (usuario, nombre, password_hash, rol)
          VALUES (?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), nombre = VALUES(nombre)'
+         ON CONFLICT (usuario) DO UPDATE SET
+            password_hash = EXCLUDED.password_hash,
+            nombre = EXCLUDED.nombre'
     );
     $stmt->execute([$usuario, $nombre, $hash, $rol]);
 

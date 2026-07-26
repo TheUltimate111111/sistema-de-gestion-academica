@@ -31,7 +31,7 @@ $asignaturas = $pdo->query('SELECT id_asignatura, nombre FROM asignaturas ORDER 
 // Cargar matrículas (JOIN)
 $matriculas = $pdo->query(
     'SELECT m.id_matricula, m.id_alumno, m.id_asignatura, m.fecha,
-            CONCAT(a.nombre, " ", a.apellido) AS alumno,
+            CONCAT(a.nombre, ' ', a.apellido) AS alumno,
             s.nombre AS asignatura
      FROM matriculas m
      JOIN alumnos a ON a.id_alumno = m.id_alumno
