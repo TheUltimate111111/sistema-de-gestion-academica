@@ -70,7 +70,7 @@ try {
     exit;
 
 } catch (PDOException $e) {
-    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error de base de datos. Verifica que el usuario admin haya sido creado visitando <code>backend/includes/crear_admin.php</code>.'];
+    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error de base de datos: ' . htmlspecialchars($e->getMessage())];
     header('Location: ../../index.php');
     exit;
 }
