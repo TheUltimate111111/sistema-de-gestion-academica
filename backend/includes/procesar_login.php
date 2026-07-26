@@ -38,7 +38,7 @@ try {
     $stmt = $pdo->prepare(
         'SELECT id, usuario, nombre, password_hash, rol
          FROM usuarios
-         WHERE usuario = ? AND estado = 1
+         WHERE usuario = ? AND estado = TRUE
          LIMIT 1'
     );
     $stmt->execute([$usuarioInput]);
@@ -70,7 +70,7 @@ try {
     exit;
 
 } catch (PDOException $e) {
-    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error de base de datos: ' . htmlspecialchars($e->getMessage())];
+    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error de base de datos. Intenta de nuevo.'];
     header('Location: ../../index.php');
     exit;
 }
