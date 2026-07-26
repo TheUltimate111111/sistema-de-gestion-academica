@@ -84,10 +84,9 @@ try {
     if ($e->getCode() === '23000') {
         $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'La cédula o el correo ya están registrados por otro alumno.'];
     } else {
-        $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error al guardar el alumno: ' . $e->getMessage()];
+        $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error al guardar el alumno. Verifica los datos e intenta de nuevo.'];
     }
 }
 
 header('Location: ../frontend/alumnos.php');
 exit;
-?>

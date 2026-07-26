@@ -12,7 +12,7 @@ declare(strict_types=1);
 session_start();
 
 if (!isset($_SESSION['usuario_activo'])) {
-    header('Location: index.php');
+    header('Location: ../index.php');
     exit;
 }
 
@@ -148,7 +148,7 @@ $usuario = $_SESSION['usuario_activo'];
                                     <div class="ga-row-actions">
                                         <button type="button" class="btn btn-light text-primary border-0 shadow-sm"
                                                 data-bs-toggle="modal" data-bs-target="#modalAlumno"
-                                                onclick='prepararEditarAlumno(<?php echo json_encode($alumno); ?>)'>
+                                                onclick="prepararEditarAlumno(<?php echo htmlspecialchars(json_encode($alumno, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8'); ?>)">
                                             <i class="bi bi-pencil-square"></i> Editar
                                         </button>
                                         <button type="button" class="btn btn-light text-danger border-0 shadow-sm btn-eliminar"

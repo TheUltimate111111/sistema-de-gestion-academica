@@ -58,9 +58,8 @@ try {
         $_SESSION['flash'] = ['tipo' => 'success', 'mensaje' => 'Convocatoria <strong>' . htmlspecialchars($nombre) . '</strong> registrada correctamente.'];
     }
 } catch (PDOException $e) {
-    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error al guardar la convocatoria: ' . $e->getMessage()];
+    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error al guardar la convocatoria. Verifica los datos e intenta de nuevo.'];
 }
 
 header('Location: ../frontend/convocatorias.php');
 exit;
-?>

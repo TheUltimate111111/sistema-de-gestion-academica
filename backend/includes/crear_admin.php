@@ -40,9 +40,7 @@ try {
     echo '</div>';
 } catch (PDOException $e) {
     echo '<div style="font-family:sans-serif;padding:2rem;color:#dc3545;">';
-    echo '<h2>❌ Error al crear usuario</h2>';
-    echo '<p>' . htmlspecialchars($e->getMessage()) . '</p>';
-    echo '<p>Asegúrate de haber ejecutado primero <code>usuarios.sql</code> en phpMyAdmin.</p>';
+    echo '<h2>Error al crear usuario</h2>';
+    echo '<p>No se pudo crear el usuario admin. Verifica que la base de datos este configurada correctamente.</p>';
     echo '</div>';
 }
-?>

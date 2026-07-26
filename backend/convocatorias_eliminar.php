@@ -39,9 +39,8 @@ try {
         $_SESSION['flash'] = ['tipo' => 'warning', 'mensaje' => 'No se encontró la convocatoria a eliminar.'];
     }
 } catch (PDOException $e) {
-    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'No se pudo eliminar la convocatoria: ' . $e->getMessage()];
+    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'No se pudo eliminar la convocatoria.'];
 }
 
 header('Location: ../frontend/convocatorias.php');
 exit;
-?>

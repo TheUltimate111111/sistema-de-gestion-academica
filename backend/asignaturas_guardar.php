@@ -56,10 +56,9 @@ try {
     if ($e->getCode() === '23000') {
         $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Ya existe una asignatura con ese nombre.'];
     } else {
-        $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error al guardar la asignatura: ' . $e->getMessage()];
+        $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error al guardar la asignatura. Verifica los datos e intenta de nuevo.'];
     }
 }
 
 header('Location: ../frontend/asignaturas.php');
 exit;
-?>

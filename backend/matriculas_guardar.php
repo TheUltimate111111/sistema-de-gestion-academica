@@ -64,10 +64,9 @@ try {
     if ($e->getCode() === '23000') {
         $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'El alumno ya está matriculado en esa asignatura.'];
     } else {
-        $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error al guardar la matrícula: ' . $e->getMessage()];
+        $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Error al guardar la matricula. Verifica los datos e intenta de nuevo.'];
     }
 }
 
 header('Location: ../frontend/matriculas.php');
 exit;
-?>

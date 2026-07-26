@@ -39,9 +39,8 @@ try {
         $_SESSION['flash'] = ['tipo' => 'warning', 'mensaje' => 'No se encontró la matrícula a eliminar.'];
     }
 } catch (PDOException $e) {
-    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'No se pudo eliminar la matrícula: ' . $e->getMessage()];
+    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'No se pudo eliminar la matricula.'];
 }
 
 header('Location: ../frontend/matriculas.php');
 exit;
-?>
