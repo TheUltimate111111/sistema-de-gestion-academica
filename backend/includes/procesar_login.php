@@ -47,9 +47,7 @@ try {
     $credencialesOk = false;
     if ($usuarioDB) {
         $storedHash = (string)($usuarioDB['password_hash'] ?? '');
-        if ($storedHash !== '' && password_verify($passwordInput, $storedHash)) {
-            $credencialesOk = true;
-        }
+        $credencialesOk = ($storedHash !== '' && password_verify($passwordInput, $storedHash));
     }
 
     if ($credencialesOk && $usuarioDB) {
@@ -65,7 +63,12 @@ try {
         exit;
     }
 
-    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Usuario o contraseña incorrectos.'];
+    $debug = 'Usuario encontrado: ' . ($usuarioDB ? 'SI (id=' . $usuarioDB['id'] . ')' : 'NO');
+    if ($usuarioDB) {
+        $debug .= ' | Hash: ' . substr($usuarioDB['password_hash'], 0, 20) . '...';
+        $debug .= ' | Verify: ' . ($credencialesOk ? 'OK' : 'FALLO');
+    }
+    $_SESSION['flash'] = ['tipo' => 'danger', 'mensaje' => 'Debug: ' . htmlspecialchars($debug)];
     header('Location: ../../index.php');
     exit;
 
