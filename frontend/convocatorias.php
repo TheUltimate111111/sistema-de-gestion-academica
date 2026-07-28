@@ -1,11 +1,4 @@
 <?php
-/**
- * convocatorias.php
- * ---------------------------------------------------
- * Módulo CONVOCATORIAS — Conectado a BD.
- * Protegido por sesión.
- * ---------------------------------------------------
- */
 declare(strict_types=1);
 session_start();
 
@@ -22,7 +15,6 @@ if (isset($_SESSION['flash'])) {
     unset($_SESSION['flash']);
 }
 
-// Cargar datos reales desde la base de datos
 $convocatorias = $pdo->query(
     'SELECT id_convocatoria, nombre, fecha_inicio, fecha_fin
      FROM convocatorias
@@ -37,7 +29,7 @@ $usuario = $_SESSION['usuario_activo'];
     <meta charset="UTF-8">
     <title>Convocatorias | Gestión Académica</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232f5d9f'><path d='M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z'/></svg>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/styles.css">
@@ -63,7 +55,7 @@ $usuario = $_SESSION['usuario_activo'];
             </div>
         </header>
 
-        <main class="ga-main">
+        <main class="ga-main ga-animate-in">
 
             <?php if ($flash): ?>
                 <div class="alert alert-<?php echo htmlspecialchars($flash['tipo']); ?> alert-dismissible fade show shadow-sm" role="alert">
@@ -85,22 +77,46 @@ $usuario = $_SESSION['usuario_activo'];
 
                 <div class="card-body">
 
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control" placeholder="Buscar convocatoria..."
-                                       data-table-search="tablaConvocatorias">
+                    <div class="ga-filter-bar">
+                        <div class="row g-2 align-items-end ga-filter-container" data-filter-table="tablaConvocatorias">
+                            <div class="col-md-3">
+                                <div class="ga-filter-label">Buscar</div>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control ga-filter-input" placeholder="Nombre..."
+                                           data-table-search="tablaConvocatorias">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="ga-filter-label">Estado</div>
+                                <select class="form-select form-select-sm ga-filter-select" data-filter-target="convEstado">
+                                    <option value="">Todos</option>
+                                    <option value="Próxima">Próxima</option>
+                                    <option value="Activa">Activa</option>
+                                    <option value="Finalizada">Finalizada</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="ga-filter-label">Desde</div>
+                                <input type="date" class="form-control form-control-sm ga-filter-date ga-filter-date-from"
+                                       data-filter-target="convInicio">
+                            </div>
+                            <div class="col-md-3">
+                                <div class="ga-filter-label">Hasta</div>
+                                <div class="d-flex gap-1">
+                                    <input type="date" class="form-control form-control-sm ga-filter-date ga-filter-date-to"
+                                           data-filter-target="convFin">
+                                    <button class="ga-filter-reset px-2" title="Limpiar filtros"><i class="bi bi-x-circle"></i></button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Listado Premium de Convocatorias -->
                     <div class="ga-floating-list" id="tablaConvocatorias">
                         <?php if (empty($convocatorias)): ?>
-                            <div class="text-center text-muted py-5">
-                                <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
-                                <h5>No hay convocatorias registradas.</h5>
+                            <div class="ga-empty-message">
+                                <i class="bi bi-inbox"></i>
+                                <h6>No hay convocatorias registradas.</h6>
                                 <p>Crea una nueva convocatoria para empezar.</p>
                             </div>
                         <?php else: ?>
@@ -108,23 +124,25 @@ $usuario = $_SESSION['usuario_activo'];
                                 $hoy = date('Y-m-d');
                                 if ($hoy < $convocatoria['fecha_inicio']) {
                                     $estado = ['texto' => 'Próxima', 'clase' => 'text-bg-secondary'];
-                                    $bgColor = '#64748b'; // Gray
+                                    $bgColor = '#64748b';
                                 } elseif ($hoy > $convocatoria['fecha_fin']) {
                                     $estado = ['texto' => 'Finalizada', 'clase' => 'text-bg-danger'];
-                                    $bgColor = '#ef4444'; // Red
+                                    $bgColor = '#ef4444';
                                 } else {
                                     $estado = ['texto' => 'Activa', 'clase' => 'text-bg-success'];
-                                    $bgColor = '#10b981'; // Green
+                                    $bgColor = '#10b981';
                                 }
                             ?>
-                                <div class="ga-floating-row">
+                                <div class="ga-floating-row"
+                                     data-conv-nombre="<?php echo htmlspecialchars($convocatoria['nombre']); ?>"
+                                     data-conv-estado="<?php echo $estado['texto']; ?>"
+                                     data-conv-inicio="<?php echo htmlspecialchars($convocatoria['fecha_inicio']); ?>"
+                                     data-conv-fin="<?php echo htmlspecialchars($convocatoria['fecha_fin']); ?>">
                                     <div class="ga-row-content">
-                                        <!-- Avatar -->
                                         <div class="ga-avatar" style="background-color: <?php echo $bgColor; ?>; border-radius: 8px;">
                                             <i class="bi bi-megaphone"></i>
                                         </div>
-                                        
-                                        <!-- Info -->
+
                                         <div class="ga-row-info">
                                             <div>
                                                 <span class="ga-row-label">Nombre</span>
@@ -141,7 +159,6 @@ $usuario = $_SESSION['usuario_activo'];
                                         </div>
                                     </div>
 
-                                    <!-- Acciones -->
                                     <div class="ga-row-actions">
                                         <button type="button" class="btn btn-light text-primary border-0 shadow-sm"
                                                 data-bs-toggle="modal" data-bs-target="#modalConvocatoria"
@@ -167,7 +184,6 @@ $usuario = $_SESSION['usuario_activo'];
     </div>
 </div>
 
-<!-- ===================== MODAL: Agregar / Editar convocatoria ===================== -->
 <div class="modal fade" id="modalConvocatoria" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -217,7 +233,6 @@ $usuario = $_SESSION['usuario_activo'];
     </div>
 </div>
 
-<!-- ===================== MODAL: Confirmar eliminación ===================== -->
 <div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -242,7 +257,7 @@ $usuario = $_SESSION['usuario_activo'];
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/app.js?v=2"></script>
+<script src="js/app.js?v=5"></script>
 <script>
     function prepararNuevaConvocatoria() {
         document.getElementById('tituloModalConvocatoria').innerHTML = '<i class="bi bi-megaphone me-1"></i> Nueva convocatoria';

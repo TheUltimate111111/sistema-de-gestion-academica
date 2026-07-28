@@ -1,22 +1,13 @@
-/* ===================================================
-   app.js
-   Sistema de Gestión Académica
-   Lógica general: sidebar, validaciones, buscador,
-   alertas y confirmaciones de eliminación.
-   =================================================== */
-
 document.addEventListener('DOMContentLoaded', function () {
     initSidebarToggle();
     initPageTransitions();
     initTableSearch();
+    initAdvancedFilters();
     initInputFilters();
     initFormValidations();
     initDeleteConfirmations();
 });
 
-/* -----------------------------------------------------
-   1) SIDEBAR: mostrar/ocultar en PC y móviles
-   ----------------------------------------------------- */
 function initSidebarToggle() {
     const toggleBtn = document.querySelector('.ga-sidebar-toggle');
     const sidebar = document.querySelector('.ga-sidebar');
@@ -26,11 +17,9 @@ function initSidebarToggle() {
 
     toggleBtn.addEventListener('click', function () {
         if (window.innerWidth <= 991.98) {
-            // Comportamiento Móvil: sidebar se sobrepone (clase show)
             sidebar.classList.toggle('show');
             if (backdrop) backdrop.classList.toggle('show');
         } else {
-            // Comportamiento PC: sidebar colapsa achicando margen
             sidebar.classList.toggle('collapsed');
         }
     });
@@ -43,40 +32,30 @@ function initSidebarToggle() {
     }
 }
 
-/* -----------------------------------------------------
-   1.5) ANIMACIONES DE TRANSICIÓN DE PÁGINA
-   ----------------------------------------------------- */
 function initPageTransitions() {
-    // Interceptar clics en enlaces del sidebar
     const navLinks = document.querySelectorAll('.ga-sidebar .nav-link');
     const contentArea = document.querySelector('.ga-content') || document.querySelector('.ga-wrapper');
 
     navLinks.forEach(link => {
         link.addEventListener('click', function (e) {
-            // Si el enlace tiene un href válido (y no es # o externo)
             const href = this.getAttribute('href');
             if (href && !href.startsWith('#') && !href.startsWith('http') && contentArea) {
                 e.preventDefault();
-                // Activar animación de salida
                 contentArea.classList.add('ga-content-fadeout');
-                // Navegar tras la animación (250ms acorde al CSS)
                 setTimeout(() => {
                     window.location.href = href;
-                }, 200);
+                }, 300);
             }
         });
     });
 }
 
-/* -----------------------------------------------------
-   2) BUSCADOR EN TABLAS
-   Cualquier input con [data-table-search="idTabla"]
-   filtra las filas <tbody><tr> de la tabla indicada.
-   ----------------------------------------------------- */
 function initTableSearch() {
     const searchInputs = document.querySelectorAll('[data-table-search]');
 
     searchInputs.forEach(function (input) {
+        if (input.closest('.ga-filter-container')) return;
+
         const targetId = input.getAttribute('data-table-search');
         const table = document.getElementById(targetId);
         if (!table) return;
@@ -93,11 +72,152 @@ function initTableSearch() {
     });
 }
 
-/* -----------------------------------------------------
-   3) FILTROS EN TIEMPO REAL AL TECLEAR
-   ----------------------------------------------------- */
+function initAdvancedFilters() {
+    const containers = document.querySelectorAll('.ga-filter-container');
+    if (!containers.length) return;
+
+    containers.forEach(function (container) {
+        const tableId = container.getAttribute('data-filter-table');
+        const table = document.getElementById(tableId);
+        if (!table) return;
+
+        const filters = container.querySelectorAll('.ga-filter-input, .ga-filter-select, .ga-filter-date, .ga-filter-pill, .ga-filter-num-min, .ga-filter-num-max');
+
+        function applyFilters() {
+            const rows = table.querySelectorAll('.ga-floating-row');
+            const activePills = container.querySelectorAll('.ga-filter-pill.active');
+
+            rows.forEach(function (row) {
+                let show = true;
+
+                const searchInput = container.querySelector('[data-table-search]');
+                if (show && searchInput && searchInput.value.trim()) {
+                    const filtro = searchInput.value.trim().toLowerCase();
+                    if (!row.textContent.toLowerCase().includes(filtro)) show = false;
+                }
+
+                if (show) {
+                    const prefixInputs = container.querySelectorAll('.ga-filter-input[data-filter-type="prefix"]');
+                    prefixInputs.forEach(function (inp) {
+                        if (!show) return;
+                        const val = inp.value.trim();
+                        if (!val) return;
+                        const key = inp.getAttribute('data-filter-target');
+                        const rowVal = (row.dataset[key] || '').toLowerCase();
+                        if (!rowVal.startsWith(val.toLowerCase())) show = false;
+                    });
+                }
+
+                if (show) {
+                    const selects = container.querySelectorAll('.ga-filter-select');
+                    selects.forEach(function (sel) {
+                        if (!show) return;
+                        const val = sel.value;
+                        if (!val) return;
+                        const key = sel.getAttribute('data-filter-target');
+                        const rowVal = row.dataset[key] || '';
+                        if (rowVal !== val) show = false;
+                    });
+                }
+
+                if (show && activePills.length) {
+                    let pillMatch = false;
+                    activePills.forEach(function (pill) {
+                        const key = pill.getAttribute('data-filter-target');
+                        const pillVal = pill.getAttribute('data-filter-value');
+                        const rowVal = (row.dataset[key] || '').toLowerCase();
+                        if (rowVal.startsWith(pillVal.toLowerCase())) pillMatch = true;
+                    });
+                    if (!pillMatch) show = false;
+                }
+
+                if (show) {
+                    const dateFrom = container.querySelector('.ga-filter-date-from');
+                    const dateTo = container.querySelector('.ga-filter-date-to');
+                    if (dateFrom && dateFrom.value) {
+                        const key = dateFrom.getAttribute('data-filter-target');
+                        const rowDate = row.dataset[key];
+                        if (rowDate && rowDate < dateFrom.value) show = false;
+                    }
+                    if (dateTo && dateTo.value) {
+                        const key = dateTo.getAttribute('data-filter-target');
+                        const rowDate = row.dataset[key];
+                        if (rowDate && rowDate > dateTo.value) show = false;
+                    }
+                }
+
+                if (show) {
+                    const numMin = container.querySelector('.ga-filter-num-min');
+                    const numMax = container.querySelector('.ga-filter-num-max');
+                    if (numMin && numMin.value) {
+                        const key = numMin.getAttribute('data-filter-target');
+                        const rowVal = parseInt(row.dataset[key], 10);
+                        if (!isNaN(rowVal) && rowVal < parseInt(numMin.value, 10)) show = false;
+                    }
+                    if (numMax && numMax.value) {
+                        const key = numMax.getAttribute('data-filter-target');
+                        const rowVal = parseInt(row.dataset[key], 10);
+                        if (!isNaN(rowVal) && rowVal > parseInt(numMax.value, 10)) show = false;
+                    }
+                }
+
+                row.style.display = show ? '' : 'none';
+            });
+        }
+
+        filters.forEach(function (input) {
+            var eventType;
+            if (input.tagName === 'SELECT' || input.type === 'date') {
+                eventType = 'change';
+            } else if (input.classList.contains('ga-filter-pill')) {
+                eventType = 'click';
+            } else {
+                eventType = 'input';
+            }
+
+            input.addEventListener(eventType, function () {
+                if (input.classList.contains('ga-filter-pill')) {
+                    input.classList.toggle('active');
+                }
+                applyFilters();
+            });
+        });
+
+        const resetBtn = container.querySelector('.ga-filter-reset');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                container.querySelectorAll('.ga-filter-input, .ga-filter-select, .ga-filter-date, .ga-filter-num-min, .ga-filter-num-max').forEach(function (el) {
+                    el.value = '';
+                    el.removeAttribute('min');
+                    el.removeAttribute('max');
+                });
+                container.querySelectorAll('.ga-filter-pill.active').forEach(function (el) {
+                    el.classList.remove('active');
+                });
+                applyFilters();
+            });
+        }
+
+        // Link date-from and date-to pairs so "Hasta" >= "Desde"
+        const dateFrom = container.querySelector('.ga-filter-date-from');
+        const dateTo = container.querySelector('.ga-filter-date-to');
+        if (dateFrom && dateTo) {
+            dateFrom.addEventListener('change', function () {
+                dateTo.min = this.value;
+                if (dateTo.value && dateTo.value < this.value) {
+                    dateTo.value = this.value;
+                }
+                applyFilters();
+            });
+            dateTo.addEventListener('change', function () {
+                dateFrom.max = this.value;
+                applyFilters();
+            });
+        }
+    });
+}
+
 function initInputFilters() {
-    // Solo permitir números en cédula y teléfono
     const numericInputs = document.querySelectorAll('[data-tipo="cedula"], [data-tipo="telefono"]');
     numericInputs.forEach(input => {
         input.addEventListener('input', function() {
@@ -105,7 +225,6 @@ function initInputFilters() {
         });
     });
 
-    // Solo permitir letras y espacios en nombres y apellidos
     const textInputs = document.querySelectorAll('[data-tipo="letras"]');
     textInputs.forEach(input => {
         input.addEventListener('input', function() {
@@ -113,17 +232,14 @@ function initInputFilters() {
         });
     });
 
-    // Restringir el ingreso por teclado para campos numéricos con min/max
     const rangeInputs = document.querySelectorAll('input[type="number"][min][max]');
     rangeInputs.forEach(input => {
         input.addEventListener('input', function() {
-            // Evitar 'e', '-', '+' y otros caracteres no numéricos
             this.value = this.value.replace(/[^0-9]/g, '');
             if (this.value !== '') {
                 let val = parseInt(this.value, 10);
                 let max = parseInt(this.getAttribute('max'), 10);
                 let min = parseInt(this.getAttribute('min'), 10);
-                // Si el valor ingresado es mayor al maximo, lo reemplazamos por el máximo
                 if (val > max) {
                     this.value = max;
                 }
@@ -132,9 +248,6 @@ function initInputFilters() {
     });
 }
 
-/* -----------------------------------------------------
-   4) VALIDACIÓN DE FORMULARIOS Y MÓDULO 10
-   ----------------------------------------------------- */
 function validarCedulaEcuatoriana(cedula) {
     if (cedula.length !== 10) return false;
     const digitoRegion = parseInt(cedula.substring(0, 2), 10);
@@ -166,7 +279,6 @@ function initFormValidations() {
             const campos = form.querySelectorAll('input, select, textarea');
 
             campos.forEach(function (campo) {
-                // Saltar campos ocultos
                 if (campo.type === 'hidden') return;
 
                 const valor = campo.value.trim();
@@ -174,13 +286,11 @@ function initFormValidations() {
 
                 let mensajePersonalizado = null;
 
-                // Campo obligatorio
                 if (campo.hasAttribute('required') && valor === '') {
                     campoValido = false;
                     mensajePersonalizado = 'Este campo es obligatorio.';
                 }
 
-                // Validación de correo electrónico
                 if (campoValido && campo.dataset.tipo === 'email' && valor !== '') {
                     const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                     if (!regexEmail.test(valor)) {
@@ -189,7 +299,6 @@ function initFormValidations() {
                     }
                 }
 
-                // Validación de letras (Nombres, Apellidos)
                 if (campoValido && campo.dataset.tipo === 'letras' && valor !== '') {
                     const regexLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
                     if (!regexLetras.test(valor)) {
@@ -198,7 +307,6 @@ function initFormValidations() {
                     }
                 }
 
-                // Validación de cédula (Algoritmo Módulo 10 Ecuatoriano)
                 if (campoValido && campo.dataset.tipo === 'cedula' && valor !== '') {
                     if (!validarCedulaEcuatoriana(valor)) {
                         campoValido = false;
@@ -206,7 +314,6 @@ function initFormValidations() {
                     }
                 }
 
-                // Validación de teléfono (exactamente 10 números)
                 if (campoValido && campo.dataset.tipo === 'telefono' && valor !== '') {
                     const regexTelefono = /^[0-9]{10}$/;
                     if (!regexTelefono.test(valor)) {
@@ -215,7 +322,6 @@ function initFormValidations() {
                     }
                 }
 
-                // Validación de Min y Max numérico (p. ej. Créditos)
                 if (campoValido && campo.type === 'number' && valor !== '') {
                     const numValue = parseFloat(valor);
                     if (campo.hasAttribute('min') && numValue < parseFloat(campo.getAttribute('min'))) {
@@ -235,7 +341,6 @@ function initFormValidations() {
                 }
             });
 
-            // Validación especial: fecha_fin >= fecha_inicio (convocatorias)
             const fechaInicio = form.querySelector('[name="fecha_inicio"]');
             const fechaFin = form.querySelector('[name="fecha_fin"]');
             if (fechaInicio && fechaFin && fechaInicio.value && fechaFin.value) {
@@ -251,7 +356,6 @@ function initFormValidations() {
             }
         });
 
-        // Limpiar el estado de error al escribir
         form.querySelectorAll('[required], [data-tipo]').forEach(function (campo) {
             campo.addEventListener('input', function () {
                 campo.classList.remove('is-invalid');
@@ -260,10 +364,6 @@ function initFormValidations() {
     });
 }
 
-/**
- * Marca visualmente un campo como válido o inválido
- * y actualiza su mensaje de error (invalid-feedback).
- */
 function marcarCampo(campo, esValido, mensajePersonalizado) {
     const contenedor = campo.closest('.mb-3') || campo.parentElement;
     let feedback = contenedor ? contenedor.querySelector('.invalid-feedback') : null;
@@ -278,11 +378,6 @@ function marcarCampo(campo, esValido, mensajePersonalizado) {
     }
 }
 
-/* -----------------------------------------------------
-   4) CONFIRMACIÓN DE ELIMINACIÓN
-   Cualquier botón con la clase "btn-eliminar" mostrará
-   un modal de confirmación antes de enviar la acción.
-   ----------------------------------------------------- */
 function initDeleteConfirmations() {
     const modalElemento = document.getElementById('modalConfirmarEliminar');
     if (!modalElemento) return;
@@ -306,9 +401,6 @@ function initDeleteConfirmations() {
     });
 }
 
-/* -----------------------------------------------------
-   5) ALERTAS DINÁMICAS (éxito / error)
-   ----------------------------------------------------- */
 function mostrarAlerta(referencia, mensaje, tipo) {
     tipo = tipo || 'success';
 
@@ -325,12 +417,10 @@ function mostrarAlerta(referencia, mensaje, tipo) {
 
     destino.prepend(alerta);
 
-    // Auto-cerrar luego de 4 segundos
     setTimeout(function () {
         alerta.classList.remove('show');
         alerta.addEventListener('transitionend', function () { alerta.remove(); });
     }, 4000);
 }
 
-/* Exponer función global por si se llama desde PHP (ej. tras guardar) */
 window.mostrarAlerta = mostrarAlerta;

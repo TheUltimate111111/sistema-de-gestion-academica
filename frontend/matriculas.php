@@ -1,11 +1,4 @@
 <?php
-/**
- * matriculas.php
- * ---------------------------------------------------
- * Módulo MATRÍCULAS — Conectado a BD.
- * Protegido por sesión.
- * ---------------------------------------------------
- */
 declare(strict_types=1);
 session_start();
 
@@ -22,13 +15,10 @@ if (isset($_SESSION['flash'])) {
     unset($_SESSION['flash']);
 }
 
-// Cargar alumnos para el <select>
 $alumnos = $pdo->query('SELECT id_alumno, nombre, apellido FROM alumnos ORDER BY apellido, nombre')->fetchAll(PDO::FETCH_ASSOC);
 
-// Cargar asignaturas para el <select>
 $asignaturas = $pdo->query('SELECT id_asignatura, nombre FROM asignaturas ORDER BY nombre')->fetchAll(PDO::FETCH_ASSOC);
 
-// Cargar matrículas (JOIN)
 $matriculas = $pdo->query(
     'SELECT m.id_matricula, m.id_alumno, m.id_asignatura, m.fecha,
             a.nombre || \' \' || a.apellido AS alumno,
@@ -47,7 +37,7 @@ $usuario = $_SESSION['usuario_activo'];
     <meta charset="UTF-8">
     <title>Matrículas | Gestión Académica</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232f5d9f'><path d='M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z'/></svg>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/styles.css">
@@ -73,7 +63,7 @@ $usuario = $_SESSION['usuario_activo'];
             </div>
         </header>
 
-        <main class="ga-main">
+        <main class="ga-main ga-animate-in">
 
             <?php if ($flash): ?>
                 <div class="alert alert-<?php echo htmlspecialchars($flash['tipo']); ?> alert-dismissible fade show shadow-sm" role="alert">
@@ -95,40 +85,78 @@ $usuario = $_SESSION['usuario_activo'];
 
                 <div class="card-body">
 
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control" placeholder="Buscar matrícula..."
-                                       data-table-search="tablaMatriculas">
+                    <div class="ga-filter-bar">
+                        <div class="row g-2 align-items-end ga-filter-container" data-filter-table="tablaMatriculas">
+                            <div class="col-md-3">
+                                <div class="ga-filter-label">Buscar</div>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control ga-filter-input" placeholder="Buscar..."
+                                           data-table-search="tablaMatriculas">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="ga-filter-label">Alumno</div>
+                                <select class="form-select form-select-sm ga-filter-select" data-filter-target="matAlumno">
+                                    <option value="">Todos</option>
+                                    <?php foreach ($alumnos as $a): ?>
+                                        <option value="<?php echo htmlspecialchars($a['nombre'] . ' ' . $a['apellido']); ?>">
+                                            <?php echo htmlspecialchars($a['nombre'] . ' ' . $a['apellido']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="ga-filter-label">Asignatura</div>
+                                <select class="form-select form-select-sm ga-filter-select" data-filter-target="matAsignatura">
+                                    <option value="">Todas</option>
+                                    <?php foreach ($asignaturas as $s): ?>
+                                        <option value="<?php echo htmlspecialchars($s['nombre']); ?>">
+                                            <?php echo htmlspecialchars($s['nombre']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="ga-filter-label">Desde</div>
+                                <input type="date" class="form-control form-control-sm ga-filter-date ga-filter-date-from"
+                                       data-filter-target="matFecha">
+                            </div>
+                            <div class="col-md-2">
+                                <div class="ga-filter-label">Hasta</div>
+                                <div class="d-flex gap-1">
+                                    <input type="date" class="form-control form-control-sm ga-filter-date ga-filter-date-to"
+                                           data-filter-target="matFecha">
+                                    <button class="ga-filter-reset px-2" title="Limpiar filtros"><i class="bi bi-x-circle"></i></button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Listado Premium de Matrículas -->
                     <div class="ga-floating-list" id="tablaMatriculas">
                         <?php if (empty($matriculas)): ?>
-                            <div class="text-center text-muted py-5">
-                                <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
-                                <h5>No hay matrículas registradas.</h5>
+                            <div class="ga-empty-message">
+                                <i class="bi bi-inbox"></i>
+                                <h6>No hay matrículas registradas.</h6>
                                 <p>Crea una nueva matrícula para empezar.</p>
                             </div>
                         <?php else: ?>
-                            <?php 
+                            <?php
                             $colores = ['#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#ef4444', '#f97316'];
-                            foreach ($matriculas as $matricula): 
+                            foreach ($matriculas as $matricula):
                                 $inicial = strtoupper(substr($matricula['alumno'], 0, 1));
                                 $colorIndex = ord($inicial) % count($colores);
                                 $bgColor = $colores[$colorIndex];
                             ?>
-                                <div class="ga-floating-row">
+                                <div class="ga-floating-row"
+                                     data-mat-alumno="<?php echo htmlspecialchars($matricula['alumno']); ?>"
+                                     data-mat-asignatura="<?php echo htmlspecialchars($matricula['asignatura']); ?>"
+                                     data-mat-fecha="<?php echo htmlspecialchars($matricula['fecha']); ?>">
                                     <div class="ga-row-content">
-                                        <!-- Avatar -->
                                         <div class="ga-avatar" style="background-color: <?php echo $bgColor; ?>; border-radius: 8px;">
                                             <i class="bi bi-journal-check"></i>
                                         </div>
-                                        
-                                        <!-- Info -->
+
                                         <div class="ga-row-info">
                                             <div>
                                                 <span class="ga-row-label">Alumno</span>
@@ -145,7 +173,6 @@ $usuario = $_SESSION['usuario_activo'];
                                         </div>
                                     </div>
 
-                                    <!-- Acciones -->
                                     <div class="ga-row-actions">
                                         <button type="button" class="btn btn-light text-primary border-0 shadow-sm"
                                                 data-bs-toggle="modal" data-bs-target="#modalMatricula"
@@ -171,7 +198,6 @@ $usuario = $_SESSION['usuario_activo'];
     </div>
 </div>
 
-<!-- ===================== MODAL: Agregar / Editar matrícula ===================== -->
 <div class="modal fade" id="modalMatricula" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -230,7 +256,6 @@ $usuario = $_SESSION['usuario_activo'];
     </div>
 </div>
 
-<!-- ===================== MODAL: Confirmar eliminación ===================== -->
 <div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -255,7 +280,7 @@ $usuario = $_SESSION['usuario_activo'];
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/app.js?v=2"></script>
+<script src="js/app.js?v=5"></script>
 <script>
     function prepararNuevaMatricula() {
         document.getElementById('tituloModalMatricula').innerHTML = '<i class="bi bi-clipboard2-plus-fill me-1"></i> Nueva matrícula';

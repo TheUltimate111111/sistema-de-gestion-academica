@@ -1,13 +1,4 @@
 <?php
-/**
- * alumnos.php
- * ---------------------------------------------------
- * Módulo ALUMNOS — CRUD completo conectado a la BD.
- * Protegido por sesión.
- * Los formularios hacen POST tradicional al backend,
- * que procesa y redirige de vuelta con un flash message.
- * ---------------------------------------------------
- */
 declare(strict_types=1);
 session_start();
 
@@ -18,14 +9,12 @@ if (!isset($_SESSION['usuario_activo'])) {
 
 require_once __DIR__ . '/../backend/includes/conexion.php';
 
-// Recuperar flash message
 $flash = null;
 if (isset($_SESSION['flash'])) {
     $flash = $_SESSION['flash'];
     unset($_SESSION['flash']);
 }
 
-// Cargar datos reales desde la base de datos
 $alumnos = $pdo->query(
     'SELECT id_alumno, nombre, apellido, cedula, correo, telefono
      FROM alumnos
@@ -40,7 +29,7 @@ $usuario = $_SESSION['usuario_activo'];
     <meta charset="UTF-8">
     <title>Alumnos | Gestión Académica</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232f5d9f'><path d='M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z'/></svg>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/styles.css">
@@ -66,7 +55,7 @@ $usuario = $_SESSION['usuario_activo'];
             </div>
         </header>
 
-        <main class="ga-main">
+        <main class="ga-main ga-animate-in">
 
             <?php if ($flash): ?>
                 <div class="alert alert-<?php echo htmlspecialchars($flash['tipo']); ?> alert-dismissible fade show shadow-sm" role="alert">
@@ -88,46 +77,55 @@ $usuario = $_SESSION['usuario_activo'];
 
                 <div class="card-body">
 
-                    <!-- Buscador -->
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control" placeholder="Buscar alumno..."
-                                       data-table-search="tablaAlumnos">
+                    <div class="ga-filter-bar">
+                        <div class="row g-2 align-items-end ga-filter-container" data-filter-table="tablaAlumnos">
+                            <div class="col-md-5">
+                                <div class="ga-filter-label">Buscar</div>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control ga-filter-input" placeholder="Nombre, apellido o correo..."
+                                           data-table-search="tablaAlumnos">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="ga-filter-label">Cédula</div>
+                                <input type="text" class="form-control form-control-sm ga-filter-input" placeholder="Buscar por cédula..."
+                                       data-filter-target="alumnoCedula" data-filter-type="prefix">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button class="ga-filter-reset" title="Limpiar filtros"><i class="bi bi-x-circle"></i> Limpiar</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Listado Premium de Alumnos -->
                     <div class="ga-floating-list" id="tablaAlumnos">
                         <?php if (empty($alumnos)): ?>
-                            <div class="text-center text-muted py-5">
-                                <i class="bi bi-inbox fs-1 d-block mb-3 opacity-50"></i>
-                                <h5>No hay alumnos registrados.</h5>
+                            <div class="ga-empty-message">
+                                <i class="bi bi-inbox"></i>
+                                <h6>No hay alumnos registrados.</h6>
                                 <p>Agrega un alumno nuevo para empezar.</p>
                             </div>
                         <?php else: ?>
-                            <?php 
-                            // Array de colores para avatares aleatorios pero consistentes por letra
+                            <?php
                             $colores = ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6', '#d946ef', '#f43f5e'];
-                            foreach ($alumnos as $alumno): 
+                            foreach ($alumnos as $alumno):
                                 $inicial = strtoupper(substr($alumno['nombre'], 0, 1));
                                 $colorIndex = ord($inicial) % count($colores);
                                 $bgColor = $colores[$colorIndex];
+                                $nombreCompleto = htmlspecialchars($alumno['nombre'] . ' ' . $alumno['apellido']);
                             ?>
-                                <div class="ga-floating-row">
+                                <div class="ga-floating-row"
+                                     data-alumno-nombre="<?php echo $nombreCompleto; ?>"
+                                     data-alumno-cedula="<?php echo htmlspecialchars($alumno['cedula']); ?>">
                                     <div class="ga-row-content">
-                                        <!-- Avatar -->
                                         <div class="ga-avatar" style="background-color: <?php echo $bgColor; ?>">
                                             <?php echo $inicial; ?>
                                         </div>
-                                        
-                                        <!-- Info -->
+
                                         <div class="ga-row-info">
                                             <div>
                                                 <span class="ga-row-label">Nombre Completo</span>
-                                                <span class="ga-row-title"><?php echo htmlspecialchars($alumno['nombre'] . ' ' . $alumno['apellido']); ?></span>
+                                                <span class="ga-row-title"><?php echo $nombreCompleto; ?></span>
                                             </div>
                                             <div>
                                                 <span class="ga-row-label">Cédula</span>
@@ -144,7 +142,6 @@ $usuario = $_SESSION['usuario_activo'];
                                         </div>
                                     </div>
 
-                                    <!-- Acciones -->
                                     <div class="ga-row-actions">
                                         <button type="button" class="btn btn-light text-primary border-0 shadow-sm"
                                                 data-bs-toggle="modal" data-bs-target="#modalAlumno"
@@ -153,7 +150,7 @@ $usuario = $_SESSION['usuario_activo'];
                                         </button>
                                         <button type="button" class="btn btn-light text-danger border-0 shadow-sm btn-eliminar"
                                                 data-id="<?php echo $alumno['id_alumno']; ?>"
-                                                data-nombre="<?php echo htmlspecialchars($alumno['nombre'] . ' ' . $alumno['apellido']); ?>"
+                                                data-nombre="<?php echo $nombreCompleto; ?>"
                                                 data-url="../backend/alumnos_eliminar.php">
                                             <i class="bi bi-trash3"></i>
                                         </button>
@@ -170,7 +167,6 @@ $usuario = $_SESSION['usuario_activo'];
     </div>
 </div>
 
-<!-- ===================== MODAL: Agregar / Editar alumno ===================== -->
 <div class="modal fade" id="modalAlumno" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -242,7 +238,6 @@ $usuario = $_SESSION['usuario_activo'];
     </div>
 </div>
 
-<!-- ===================== MODAL: Confirmar eliminación ===================== -->
 <div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -267,7 +262,7 @@ $usuario = $_SESSION['usuario_activo'];
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/app.js?v=2"></script>
+<script src="js/app.js?v=5"></script>
 <script>
     function prepararNuevoAlumno() {
         document.getElementById('tituloModalAlumno').innerHTML = '<i class="bi bi-person-plus-fill me-1"></i> Nuevo alumno';
