@@ -60,7 +60,7 @@ $usuarioRol    = $_SESSION['usuario_activo']['rol']    ?? '';
                 <?php endif; ?>
             </div>
         </div>
-        <a href="../backend/includes/logout.php" class="nav-link text-danger px-0">
+        <a href="../logout.php" class="nav-link text-danger px-0">
             <i class="bi bi-box-arrow-right"></i> Cerrar sesión
         </a>
     </div>

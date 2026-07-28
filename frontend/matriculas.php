@@ -20,13 +20,13 @@ $alumnos = $pdo->query('SELECT id_alumno, nombre, apellido FROM alumnos ORDER BY
 $asignaturas = $pdo->query('SELECT id_asignatura, nombre FROM asignaturas ORDER BY nombre')->fetchAll(PDO::FETCH_ASSOC);
 
 $matriculas = $pdo->query(
-    'SELECT m.id_matricula, m.id_alumno, m.id_asignatura, m.fecha,
-            a.nombre || \' \' || a.apellido AS alumno,
+    "SELECT m.id_matricula, m.id_alumno, m.id_asignatura, m.fecha,
+            CONCAT(a.nombre, ' ', a.apellido) AS alumno,
             s.nombre AS asignatura
      FROM matriculas m
      JOIN alumnos a ON a.id_alumno = m.id_alumno
      JOIN asignaturas s ON s.id_asignatura = m.id_asignatura
-     ORDER BY m.fecha DESC'
+     ORDER BY m.fecha DESC"
 )->fetchAll(PDO::FETCH_ASSOC);
 
 $usuario = $_SESSION['usuario_activo'];
